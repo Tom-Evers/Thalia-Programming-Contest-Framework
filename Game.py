@@ -9,7 +9,7 @@ from Visualiser import Visualiser
 
 RECVCONST = 4096
 TURNTIMEOUT = 2.0
-MINTURNTIME = 0.5
+MINTURNTIME = 0.01
 
 
 class Tile(Enum):

@@ -1,5 +1,5 @@
 # TEAM NAME:
-Asterix
+Asterix2
 
 # VISUALISER ENABLED:
 1
@@ -8,11 +8,11 @@ Asterix
 1
 
 # SERVER ADDRESS:
-zeeslag.thalia.nu:42042
-#localhost:42042
+localhost:42042
+#zeeslag.thalia.nu:42042
 
 # BOT RUNNING COMMAND:
-./Asterix.py
+./Asterix2.py
 
 # Example commands:
 # ./starterbot.py

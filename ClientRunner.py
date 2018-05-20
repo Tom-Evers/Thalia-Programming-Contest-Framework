@@ -321,7 +321,7 @@ def work():
     print(team)
 
     if debug_on:
-        debugfile = open("./stderr.txt", "w")
+        debugfile = open("./stderr{}.txt".format(team), "w")
         # Write initial line containing time
     proc = Popen(command, shell=SHELLMODE, stdin=PIPE, stdout=PIPE, stderr=debugfile if debug_on else DEVNULL,
                  bufsize=1, universal_newlines=True, preexec_fn=os.setsid)
