@@ -1,5 +1,7 @@
 #!/usr/bin/python3
+import operator
 from collections import deque
+from typing import Callable, Tuple
 
 from Asterix2_utils import *
 
@@ -10,15 +12,16 @@ def print(x):
 
 
 class Asterix2(Bot):
+
     def __init__(self):
         super().__init__()
         self.relevant_history = []
         self.history = []
+        self.search_direction = Dir.NORTH
 
         self.enemy_ships_left = {Ship.CARRIER: 1, Ship.BATTLESHIP: 2, Ship.CRUISER: 3, Ship.DESTROYER: 4}
         self.enemy_possible_ships = init_possible_ships(self.enemy_ships_left, self.enemyBoard.dims)
         self.priority = deque()  # (caused_by, coords)
-
 
         self.own_multipliers = make_field_with_value(1, self.ownBoard.dims)
         self.own_ships_left = {Ship.CARRIER: 1, Ship.BATTLESHIP: 2, Ship.CRUISER: 3, Ship.DESTROYER: 4}
@@ -81,8 +84,7 @@ class Asterix2(Bot):
         print("prios: {}".format(str(list(map(lambda x: x[1], self.priority)))))
         print("becos: {}".format(str(list(map(lambda x: x[0], self.priority)))))
         # print(to_heatmap(self.enemy_possible_ships, self.enemyBoard.dims))
-        print('\n'.join(
-            list(map(lambda y: str(list(map(lambda x: 'X' if x == Tile.Ship else '-', y))), self.enemyBoard.board))))
+        self.print_board(self.enemyBoard)
 
     def choose_ship_location(self):
         ship_type = self.choose_ship_size()
@@ -132,6 +134,34 @@ class Asterix2(Bot):
                      int(re.sub("\D", "", tokens[3])))
             self.own_possible_ships = remove_location_from_possible_ships(coord, self.own_possible_ships)
         # TODO: If island placement is according to highest probabilities, place ships least likely.
+
+    def print_board(self, board):
+        line = '\n' + '_____' * 10 + '___' * 9
+        for x in range(board.dims[X]):
+            line1 = ""
+            line2 = ""
+            for y in range(board.dims[Y]):
+                try:
+                    because, prio = list(map(list, zip(*list(filter(lambda p: (x, y) == p[1], self.priority)))))
+                except ValueError:
+                    because, prio = [], []
+                if board.get((x, y)) == Tile.Ship:
+                    line1 += '  X  '
+                    line2 += '-----' if (x, y) in prio else '-{},{}-'.format(x, y)
+                elif (x, y) in prio:
+                    because = because[prio.index((x, y))]
+                    line1 += '  {}  '.format(self.priority.index((because, (x, y))))
+                    line2 += '({},{})'.format(*because)
+                elif (x, y) in self.history:
+                    line1 += '  M  '
+                    line2 += '-----' if (x, y) in prio else '     '
+                else:
+                    line1 += '  ~  '
+                    line2 += '-----' if (x, y) in prio else '     '
+                line1 += ' | '
+                line2 += ' | '
+            print(line1)
+            print(line2 + line)
 
 
 if __name__ == "__main__":

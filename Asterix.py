@@ -27,26 +27,36 @@ class Asterix(Bot):
                                     Ship.CRUISER: 3,
                                     Ship.DESTROYER: 4}
         self.enemy_multiplier_map = make_field_with_value(1)
-        self.enemy_possible_ships = self.init_possible_ships()
-        self.own_possible_ships = self.init_possible_ships()
+        self.enemy_possible_ships = self.init_possible_ships(self.enemy_ship_type_count)
+        self.own_possible_ships = self.init_possible_ships(self.own_ship_type_count)
         self.own_multiplier_map = make_field_with_value(1)
         self.already_picked = []
 
-    def init_possible_ships(self):
-        result = []
-        for ship_type, _ in self.enemy_ship_type_count.items():
-            for dir in [HORIZONTAL, VERTICAL]:
-                for x in range(DIMENSIONS[X] - ship_type * dir[X]):
-                    for y in range(DIMENSIONS[Y] - ship_type * dir[Y]):
-                        result.append((ship_type, list_coords(x, y, dir, ship_type)))
-        return result
+    def init_possible_ships(self, ships):
+        poss = []
+        for ship_size, ship_count in ships.items():
+            for n in range(ship_count):
+                for x in range(DIMENSIONS[X]):
+                    for y in range(DIMENSIONS[Y] - ship_size + 1):
+                        coords = []
+                        for i in range(ship_size):
+                            coords.append((x, y + i))
+                        poss.append((n, coords))
+                for y in range(DIMENSIONS[Y]):
+                    for x in range(DIMENSIONS[X] - ship_size + 1):
+                        coords = []
+                        for i in range(ship_size):
+                            coords.append((x + i, y))
+                        poss.append((n, coords))
+        return poss
 
     def get_shipcounts(self):
-        result = []
-        for t, y in self.enemy_possible_ships:
-            for _ in range(self.enemy_ship_type_count[t]):
-                result += y
-        return Counter(result)
+        return Counter([y for _, x in self.enemy_possible_ships for y in x])
+        # result = []
+        # for id, y in self.enemy_possible_ships:
+        #     for _ in range(self.enemy_ship_type_count[t]):
+        #         result += y
+        # return Counter(result)
 
     def get_top_of_heatmap(self):
         max_val = 0
@@ -64,23 +74,27 @@ class Asterix(Bot):
         return random.choice(max_coords)
 
     def get_bottom_of_heat_map(self, heatmap):
-        result = []
-        for t, y in heatmap:
-            for _ in range(self.enemy_ship_type_count[t]):
-                result += y
-        counts = Counter(result)
-        # if len(counts) >= 5:
-        #     least_likely = counts.most_common()[-5:]
-        # else:
-        #     least_likely = counts.most_common()
-        # likely_ = random.choice(least_likely)[0]
+
+        # result = []
+        # for t, y in heatmap:
+        #     for _ in range(self.enemy_ship_type_count[t]):
+        #         result += y
+        # counts = Counter(result)
+        # # if len(counts) >= 5:
+        # #     least_likely = counts.most_common()[-5:]
+        # # else:
+        # #     least_likely = counts.most_common()
+        # # likely_ = random.choice(least_likely)[0]
+        counts = Counter([y for _, x in self.enemy_possible_ships for y in x])
         likely_ = counts.most_common()[-1][0]
         # print(str(likely_))
         return likely_
 
     def remove_ship_from_heatmap(self, sunk):
         # self.possible_ships = list(filter(lambda pos: sunk is not pos[0], self.possible_ships))
-        self.enemy_ship_type_count[sunk] -= 1  # FIXME: Kan dit onder de 0?
+        # self.enemy_ship_type_count[sunk] -= 1  # FIXME: Kan dit onder de 0?
+        return list(filter(lambda x: x[0] != self.enemy_ship_type_count[sunk] or len(x[1]) != sunk,
+                           self.enemy_possible_ships))
 
     def remove_location_from_heatmap(self, x, y):
         self.enemy_possible_ships = list(filter(lambda pos: (x, y) not in pos[1], self.enemy_possible_ships))
@@ -93,7 +107,7 @@ class Asterix(Bot):
 
     def choose_ship_location(self):
         ship_type = self.choose_ship_size()
-        possible_ship_locations = list(filter(lambda pos: ship_type == pos[0], self.own_possible_ships))
+        possible_ship_locations = list(filter(lambda pos: ship_type == len(pos[1]), self.own_possible_ships))
         possible_ship_locations = list(map(lambda x: (self.accumulated_heat(x), x), possible_ship_locations))
         possible_ship_locations.sort()
         # pref = []
@@ -217,11 +231,12 @@ class Asterix(Bot):
         ship_type, ship_coords = ship_type_and_loc
 
         def get_counts():
-            result = []
-            for t, y in self.own_possible_ships:
-                for _ in range(self.own_ship_type_count[t]):
-                    result += y
-            return Counter(result)
+            return Counter([y for _, x in self.own_possible_ships for y in x])
+            # result = []
+            # for t, y in self.own_possible_ships:
+            #     for _ in range(self.own_ship_type_count[t]):
+            #         result += y
+            # return Counter(result)
 
         counts = get_counts()
         acc_heat = 0

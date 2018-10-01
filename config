@@ -1,5 +1,5 @@
 # TEAM NAME:
-Asterix2
+Asterix
 
 # VISUALISER ENABLED:
 1
@@ -12,7 +12,7 @@ localhost:42042
 #zeeslag.thalia.nu:42042
 
 # BOT RUNNING COMMAND:
-./Asterix2.py
+./Asterix.py
 
 # Example commands:
 # ./starterbot.py

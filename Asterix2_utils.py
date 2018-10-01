@@ -1,4 +1,6 @@
+import operator
 from collections import Counter
+from typing import Callable, Tuple
 
 from Bot import *
 
@@ -7,8 +9,35 @@ Y = 1
 SHIP_TYPE = 0
 COORDS = 1
 CAUSED_BY = 0
-LEFT = True
-RIGHT = False
+
+
+# LEFT = True
+# RIGHT = False
+
+class Dir(Enum):
+    NORTH = 0, -1
+    SOUTH = 0, 1
+    EAST = 1, 0
+    WEST = -1, 0
+
+    @staticmethod
+    def add(a, b):
+        return tuple(map(operator.add, a, b))
+
+    @staticmethod
+    def sub(a, b):
+        return tuple(map(operator.sub, a, b))
+
+    @property
+    def flip(self):
+        if self == Dir.NORTH:
+            return Dir.SOUTH
+        elif self == Dir.SOUTH:
+            return Dir.NORTH
+        elif self == Dir.EAST:
+            return Dir.WEST
+        else:
+            return Dir.EAST
 
 
 def parse(t):
